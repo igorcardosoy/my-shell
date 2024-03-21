@@ -1,0 +1,38 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "c:/Users/igorf/OneDrive - ifsp.edu.br/TSI/3 - Semestre/SSOS/Shell/my-shell/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "windows-gcc-x64",
+            "mergeConfigurations": false,
+            "compilerPath": "C:/mingw64/bin/gcc.exe",
+            "browse": {
+                "path": [
+                    "c:/Users/igorf/OneDrive - ifsp.edu.br/TSI/3 - Semestre/SSOS/Shell/my-shell/**",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        },
+        {
+            "name": "Win64",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
