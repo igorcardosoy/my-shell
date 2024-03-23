@@ -42,6 +42,7 @@ int main() {
         if (!exit) {
             
             if (!strcmp(command, "history\n")) { history_command(history, command); }
+            broke_string(command, parameters);
 
             internal_commands(parameters);
 
@@ -122,10 +123,10 @@ void external_commands(char* parameters[]) {
     if (fork() != 0) {
         waitpid(-1, &status, 0);
     } else {
-        char* env[] = { "TERM=xterm", NULL };
-        if (execve(parameters[0], parameters, env) == -1) {
+        if (execvp(parameters[0], parameters) == -1) {
             _exit(1);
         }
+        perror("execvp");
     }
 }
 
@@ -135,10 +136,7 @@ void read_command(char* command, char* parameters[]) {
 }
 
 void broke_string(char* command, char* parameters[]) {
-    char command_bin[BUFFER_SIZE] = "/bin/";
-    char command_to_execute[BUFFER_SIZE];
-
-    strcpy(command_to_execute, command_bin);
+    char command_to_execute[BUFFER_SIZE]
 
     command[strlen(command) - 1] = '\0';
 
