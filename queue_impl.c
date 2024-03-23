@@ -42,7 +42,9 @@ bool enqueue(Queue queue, Element element)
     }
 
     queue->items[queue->last] = element;
-    queue->size += 1;
+    if (!queue->size == QUEUE_MAX_SIZE)
+        queue->size += 1;
+        
     answer = true;
 
     return answer;
