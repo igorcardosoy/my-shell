@@ -11,8 +11,7 @@
 typedef char* Element;
 typedef struct queue *Queue;
 
-
-void init(Queue *queue);
+void init_queue(Queue *queue);
 
 bool is_full(Queue queue);
 

@@ -4,21 +4,18 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
-#include "queue.h"
-
-struct alias_commands {
-    char* command;
-    char* name;
-};
+#include "./queue/queue.h"
+#include "./lse/lse.h"
 
 void type_prompt();
 void read_command(char*, char**);
-void internal_commands(char*, char**, Queue);
+void internal_commands(char*, char**, Queue, Alias);
 void external_commands(char*, char**);
 void history_command(Queue, char*);
 void broke_string(char*, char**);
 void clean_buffer(char*, char**);
-void assign(char**);
+void assign(char**, Alias);
+void unassign(char**, Alias);
 char* get_directory();
 char* get_username();
 char* get_hostname();
@@ -26,8 +23,10 @@ struct tm* get_time();
 
 int main() {
     Queue history;
+    Alias alias;
 
-    init(&history);
+    init_queue(&history);
+    init_list(&alias);
 
     //system("clear");
 
@@ -41,7 +40,7 @@ int main() {
 
         enqueue(history, command);
 
-        internal_commands(command, parameters, history);
+        internal_commands(command, parameters, history, alias);
         external_commands(command, parameters);
     }
 
@@ -58,15 +57,18 @@ void read_command(char* command, char* parameters[]) {
     broke_string(command, parameters);
 }
 
-void internal_commands(char* command, char* parameters[], Queue history) {
+void internal_commands(char* command, char* parameters[], Queue history, Alias alias) {
     if (!strcmp(command, "alias")) {
-        assign(parameters);
+        assign(parameters, alias);
+
+    } else if (!strcmp(command, "unalias")) {
+        unassign(parameters, alias);
 
     } else if (!strcmp(command, "history")) {
         clean_buffer(command, parameters);
         history_command(history, command);
         broke_string(command, parameters);
-        internal_commands(command, parameters, history);
+        internal_commands(command, parameters, history, alias);
 
     } else if (!strcmp(command, "exit")) {
         _exit(0);
@@ -173,8 +175,20 @@ void clean_buffer(char* command, char* parameters[]) {
     }
 }
 
-void assign(char* parameters[]){
+void assign(char* parameters[], Alias alias){
+    printf("alias command\n");
+    char* name = strtok(parameters[1], "=");
+    char* command = strtok(NULL, "\"\"");
 
+    insert_command(alias, name, command);
+}
+
+void unassign(char* parameters[], Alias alias){
+    printf("unalias command\n");
+    char* name = parameters[1];
+    printf("%s\n", name);
+
+    remove_command(alias, name);
 }
 
 char* get_directory() {

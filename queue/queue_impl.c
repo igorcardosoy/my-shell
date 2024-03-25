@@ -5,7 +5,7 @@ struct queue{
     int last, first, size;
 };
 
-void init(Queue* queue){
+void init_queue(Queue* queue){
     Queue q;
     q = malloc(sizeof(struct queue));
     q->last = -1;
