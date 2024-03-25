@@ -23,3 +23,10 @@ Para executar o programa, execute o comando:
 ```bash
   $ ./my-shell
 ```
+
+## Instalar Make
+```bash
+  $ sudo apt install make
+```
+
+
