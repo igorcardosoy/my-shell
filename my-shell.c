@@ -102,6 +102,7 @@ void external_commands(char* command, char* parameters[]) {
 
 void history_command(Queue history, char* command) {
     int queue_size = size(history);
+    char* string = malloc(sizeof(char) * BUFFER_SIZE);
 
     for (int i = 0; i < queue_size; i++) {
         char* temp_string;
@@ -110,15 +111,14 @@ void history_command(Queue history, char* command) {
         enqueue(history, temp_string);
     }
 
-    fgets(command, BUFFER_SIZE, stdin);
+    fgets(string, BUFFER_SIZE, stdin);
+    if (string[strlen(string) - 1] == '\n')
+        string[strlen(string) - 1] = '\0';
 
-    if (command[strlen(command) - 1] == '\n')
-        command[strlen(command) - 1] = '\0';
-
-    if (command[0] == '!'){
+    if (string[0] == '!' && string[1] != ' ' && string[1] != '\0'){
         
-        command = strtok(command, "!");
-        int index = atoi(command);
+        string = strtok(string, "!");
+        int index = atoi(string);
         
         for (int i = 0; i < queue_size; i++) {
             char* temp_string;
@@ -132,8 +132,9 @@ void history_command(Queue history, char* command) {
         
         enqueue(history, command);
     } else {
-        enqueue(history, command);
-        printf("internal command \"%s\" not found\n", command);
+        enqueue(history, string);
+        snprintf(command, BUFFER_SIZE, "%s", string);
+        printf("internal command \"%s\" not found\n", string);
     }
 }
 
