@@ -6,10 +6,6 @@
 #include <time.h>
 #include "queue.h"
 
-#define BUFFER_SIZE 100
-#define COMMAND_SIZE 200
-#define ARGS_SIZE 20
-
 struct alias_commands {
     char* command;
     char* name;
@@ -31,10 +27,9 @@ struct tm* get_time();
 int main() {
     Queue history;
 
-
     init(&history);
 
-    system("clear");
+    //system("clear");
 
     while (true) {
         char* command = malloc(sizeof(char) * COMMAND_SIZE);
@@ -71,6 +66,7 @@ void internal_commands(char* command, char* parameters[], Queue history) {
         clean_buffer(command, parameters);
         history_command(history, command);
         broke_string(command, parameters);
+        internal_commands(command, parameters, history);
 
     } else if (!strcmp(command, "exit")) {
         _exit(0);
@@ -110,28 +106,35 @@ void history_command(Queue history, char* command) {
     for (int i = 0; i < queue_size; i++) {
         char* temp_string;
         temp_string = dequeue(history);
-        enqueue(history, temp_string);
         printf("[%d]: %s\n", i + 1, temp_string);
-    }
-
-    char* string = malloc(sizeof(char) * BUFFER_SIZE);
-
-    fgets(string, BUFFER_SIZE, stdin);
-
-    string = strtok(string, "!");
-    int index = atoi(string);
-
-    for (int i = 0; i < queue_size && i != index; i++) {
-        char* temp_string;
-        temp_string = dequeue(history);
         enqueue(history, temp_string);
-
-        if (i == index - 1) {
-            snprintf(command, BUFFER_SIZE, "%s", temp_string);
-        }
     }
 
-    enqueue(history, command);
+    fgets(command, BUFFER_SIZE, stdin);
+
+    if (command[strlen(command) - 1] == '\n')
+        command[strlen(command) - 1] = '\0';
+
+    if (command[0] == '!'){
+        
+        command = strtok(command, "!");
+        int index = atoi(command);
+        
+        for (int i = 0; i < queue_size; i++) {
+            char* temp_string;
+            temp_string = dequeue(history);
+            enqueue(history, temp_string);
+
+            if (i == index - 1) {
+                snprintf(command, BUFFER_SIZE, "%s", temp_string);
+            }
+        }
+        
+        enqueue(history, command);
+    } else {
+        enqueue(history, command);
+        printf("internal command \"%s\" not found\n", command);
+    }
 }
 
 void broke_string(char* command, char* parameters[]) {
