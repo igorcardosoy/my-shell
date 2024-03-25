@@ -1,25 +1,14 @@
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <time.h>
+#include "./utils/utils.h"
 #include "./queue/queue.h"
 #include "./lse/lse.h"
 
-void type_prompt();
 void read_command(char*, char**);
 void internal_commands(char*, char**, Queue, Alias);
 void external_commands(char*, char**);
 void history_command(Queue, char*);
 void broke_string(char*, char**);
-void clean_buffer(char*, char**);
 void assign(char**, Alias);
 void unassign(char**, Alias);
-char* get_directory();
-char* get_username();
-char* get_hostname();
-struct tm* get_time();
 
 int main() {
     Queue history;
@@ -28,10 +17,10 @@ int main() {
     init_queue(&history);
     init_list(&alias);
 
-    //system("clear");
+    system("clear");
 
     while (true) {
-        char* command = malloc(sizeof(char) * COMMAND_SIZE);
+        char* command = malloc(sizeof(char) * BUFFER_SIZE);
         char* parameters[ARGS_SIZE];
         int status = 0;
 
@@ -47,33 +36,35 @@ int main() {
     return 0;
 }
 
-void type_prompt() {
-    struct tm* time = get_time();
-    printf("%s@%s[%02d:%02d:%02d] /%s $ ", get_username(), get_hostname(), time->tm_hour, time->tm_min, time->tm_sec, get_directory());
-}
-
 void read_command(char* command, char* parameters[]) {
     fgets(command, BUFFER_SIZE, stdin);
     broke_string(command, parameters);
 }
 
 void internal_commands(char* command, char* parameters[], Queue history, Alias alias) {
-    if (!strcmp(command, "alias")) {
+
+    if (find_command(alias, parameters[0]) != NULL) {
+        char* alias_command = find_command(alias, parameters[0]);
+        snprintf(command, BUFFER_SIZE, "%s", alias_command);
+        broke_string(command, parameters);
+    }
+
+    if (!strcmp(parameters[0], "alias")) {
         assign(parameters, alias);
-
-    } else if (!strcmp(command, "unalias")) {
+        clean_buffer(command, parameters);
+    } else if (!strcmp(parameters[0], "unalias")) {
         unassign(parameters, alias);
-
-    } else if (!strcmp(command, "history")) {
+        clean_buffer(command, parameters);
+    } else if (!strcmp(parameters[0], "history")) {
         clean_buffer(command, parameters);
         history_command(history, command);
         broke_string(command, parameters);
         internal_commands(command, parameters, history, alias);
 
-    } else if (!strcmp(command, "exit")) {
+    } else if (!strcmp(parameters[0], "exit")) {
         _exit(0);
 
-    } else if (!strcmp(command, "cd")) {
+    } else if (!strcmp(parameters[0], "cd")) {
         if (parameters[1] == NULL) {
             chdir(getenv("HOME"));
 
@@ -82,7 +73,7 @@ void internal_commands(char* command, char* parameters[], Queue history, Alias a
         }
         clean_buffer(command, parameters);
 
-    } else if (!strcmp(command, "cls") || !strcmp(command, "clear")) {
+    } else if (!strcmp(parameters[0], "cls") || !strcmp(parameters[0], "clear")) {
         system("clear");
         clean_buffer(command, parameters);
     }
@@ -117,11 +108,11 @@ void history_command(Queue history, char* command) {
     if (string[strlen(string) - 1] == '\n')
         string[strlen(string) - 1] = '\0';
 
-    if (string[0] == '!' && string[1] != ' ' && string[1] != '\0'){
-        
+    if (string[0] == '!' && string[1] != ' ' && string[1] != '\0') {
+
         string = strtok(string, "!");
         int index = atoi(string);
-        
+
         for (int i = 0; i < queue_size; i++) {
             char* temp_string;
             temp_string = dequeue(history);
@@ -131,7 +122,7 @@ void history_command(Queue history, char* command) {
                 snprintf(command, BUFFER_SIZE, "%s", temp_string);
             }
         }
-        
+
         enqueue(history, command);
     } else {
         enqueue(history, string);
@@ -142,93 +133,65 @@ void history_command(Queue history, char* command) {
 
 void broke_string(char* command, char* parameters[]) {
     char* token;
+    char* copy;
+    char* original;
+    int i = 1;
 
     if (command[strlen(command) - 1] == '\n')
         command[strlen(command) - 1] = '\0';
 
-    token = strtok(command, " ");
+    copy = malloc(sizeof(char) * BUFFER_SIZE);
+    snprintf(copy, BUFFER_SIZE, "%s", command);
 
-    strcpy(command, token);
+    original = malloc(sizeof(char) * BUFFER_SIZE);
+    snprintf(original, BUFFER_SIZE, "%s", command);
 
-    int i = 1;
-    while (token != NULL) {
-        token = strtok(NULL, " ");
-        if (token != NULL) {
-            parameters[i] = malloc(sizeof(char) * BUFFER_SIZE);
-            snprintf(parameters[i], BUFFER_SIZE, "%s", token);
+    token = strtok(copy, " ");
+
+    strcpy(copy, token);
+
+    if (!strcmp(copy, "alias")) {
+
+        parameters[0] = malloc(sizeof(char) * BUFFER_SIZE);
+        snprintf(parameters[0], BUFFER_SIZE, "%s", copy);
+
+        copy = strtok(NULL, "=");
+        parameters[1] = malloc(sizeof(char) * BUFFER_SIZE);
+        snprintf(parameters[1], BUFFER_SIZE, "%s", copy);
+
+        original = strtok(NULL, "\"\"");
+        parameters[2] = malloc(sizeof(char) * BUFFER_SIZE);
+        snprintf(parameters[2], BUFFER_SIZE, "%s", original);
+
+        parameters[3] = NULL;
+    } else {
+        while (token != NULL) {
+            token = strtok(NULL, " ");
+            if (token != NULL) {
+                parameters[i] = malloc(sizeof(char) * BUFFER_SIZE);
+                snprintf(parameters[i], BUFFER_SIZE, "%s", token);
+            }
+
+            i++;
         }
 
-        i++;
-    }
+        parameters[0] = malloc(sizeof(char) * BUFFER_SIZE);
+        snprintf(parameters[0], sizeof(copy), "%s", copy);
 
-    parameters[0] = malloc(sizeof(char) * BUFFER_SIZE);
-    snprintf(parameters[0], sizeof(command), "%s", command);
-
-    parameters[i-1] = NULL;
-}
-
-void clean_buffer(char* command, char* parameters[]) {
-    command = NULL;
-
-    for (int i = 0; parameters[i] != NULL; i++) {
-        parameters[i] = NULL;
+        parameters[i - 1] = NULL;
     }
 }
 
-void assign(char* parameters[], Alias alias){
-    printf("alias command\n");
-    char* name = strtok(parameters[1], "=");
-    char* command = strtok(NULL, "\"\"");
+void assign(char* parameters[], Alias alias) {
+    char* name = malloc(sizeof(char) * BUFFER_SIZE);
+    snprintf(name, BUFFER_SIZE, "%s", parameters[1]);
 
+    char* command = malloc(sizeof(char) * BUFFER_SIZE);
+    snprintf(command, BUFFER_SIZE, "%s", parameters[2]);
+    
     insert_command(alias, name, command);
 }
 
-void unassign(char* parameters[], Alias alias){
-    printf("unalias command\n");
-    char* name = parameters[1];
-    printf("%s\n", name);
-
-    remove_command(alias, name);
-}
-
-char* get_directory() {
-    char* buf = malloc(sizeof(char) * 1024);
-    char* directory = malloc(sizeof(char) * 1024);
-    char* cwd;
-    char* token;
-
-    cwd = getcwd(buf, 1024);
-    token = strtok(cwd, "/");
-
-    strcpy(cwd, token);
-
-    int i = 0;
-    while (token != NULL) {
-        token = strtok(NULL, "/");
-
-        if (token != NULL)
-            snprintf(directory, BUFFER_SIZE, "%s", token);
-
-        i++;
-    }
-
-    return directory;
-}
-
-char* get_username() {
-    char* username = getenv("USER");
-    return username;
-}
-
-char* get_hostname() {
-    char* hostname = malloc(sizeof(char) * 100);
-    gethostname(hostname, 100);
-    return hostname;
-}
-
-struct tm* get_time() {
-    time_t segundos;
-    time(&segundos);
-
-    return localtime(&segundos);
+void unassign(char* parameters[], Alias alias) {
+    remove_command(alias, parameters[1]);
 }

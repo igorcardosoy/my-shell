@@ -1,12 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
+#include "../utils/utils.h"
 
 #define QUEUE_MAX_SIZE 10
-#define BUFFER_SIZE 100
-#define COMMAND_SIZE 200
-#define ARGS_SIZE 20
 
 typedef char* Element;
 typedef struct queue *Queue;
