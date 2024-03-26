@@ -3,7 +3,7 @@
     $ make
 
     Se preferir compilar manualmente, execute o comando:
-    $ gcc -o my-shell my-shell.c ./utils/utils.c ./queue/queue_impl.c ./lse/lse_impl.c
+    $ gcc -o my-shell ./src/my-shell.c ./src/utils/utils.c ./src/queue/queue_impl.c ./src/lse/lse_impl.c
 
     Para executar o programa, execute o comando:
     $ ./my-shell
@@ -35,7 +35,7 @@ int main() {
         char* parameters[ARGS_SIZE];
         int status = 0;
 
-        type_prompt();
+
         read_command(command, parameters);
 
         enqueue(history, command);
@@ -48,7 +48,13 @@ int main() {
 }
 
 void read_command(char* command, char* parameters[]) {
-    fgets(command, BUFFER_SIZE, stdin);
+    
+    do
+    {
+        type_prompt();
+        fgets(command, BUFFER_SIZE, stdin);
+    } while (strcmp(command, " \n") == 0 || strcmp(command, "\n") == 0);
+
     broke_string(command, parameters);
 }
 

@@ -16,7 +16,7 @@ Este repositório contém todo o código do projeto Shell, que consiste na cria�
 
 - Se preferir compilar manualmente, execute o comando:
 ```bash
-  $ gcc -o my-shell my-shell.c ./utils/utils.c ./queue/queue_impl.c ./lse/lse_impl.c
+  $ gcc -o my-shell ./src/my-shell.c ./src/utils/utils.c ./src/queue/queue_impl.c ./src/lse/lse_impl.c
 ```
 
 Para executar o programa, execute o comando:
