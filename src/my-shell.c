@@ -163,11 +163,16 @@ void unassign(char* command, char* parameters[], Alias alias) {
 }
 
 void cd_command(char* command, char* parameters[]) {
-    if (parameters[1] == NULL) {
-        chdir(getenv("HOME"));
+    if (parameters[1] != NULL) {
+        if (!strcmp(parameters[1], "/")){
+            chdir(getenv("HOME"));
+        } else {
+            chdir(parameters[1]);
+        }
     } else {
-        chdir(parameters[1]);
+        chdir(getenv("HOME"));
     }
+
     clean_buffer(command, parameters);
 }
 
