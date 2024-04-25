@@ -16,6 +16,14 @@ void type_prompt();
 
 void clean_buffer(char*, char**);
 
+void remove_trailing_newline(char*);
+
+void separate_parameters(char*, char**);
+
+bool is_alias(char*);
+
+void separate_alias(char*, char**);
+
 char* get_directory();
 
 char* get_username();
